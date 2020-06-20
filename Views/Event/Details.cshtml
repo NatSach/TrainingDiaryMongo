@@ -1,0 +1,31 @@
+﻿@model Event
+
+<h2>@Model.Type - @Model.EventName</h2>
+<hr />
+<h4>@Html.DisplayFor(model => model.Location)</h4>
+<h5><b>@Html.DisplayFor(model => model.StartDate) - @Html.DisplayFor(model => model.EndDate)</b></h5>
+<hr />
+<p>@Html.DisplayFor(model => model.Description)</p>
+<hr />
+<h5>Event organizer: </h5>
+<p>@Html.DisplayFor(model => model.Organiser.FirstName) @Html.DisplayFor(model => model.Organiser.LastName) - @Html.DisplayFor(model => model.Organiser.Email)</p>
+<h5>Event participants:</h5>
+@if (Model.Participants == null)
+{
+    <p>-</p>
+}
+else
+{
+    foreach (var person in Model.Participants)
+    {
+        <p>@Html.DisplayFor(model => person.FirstName) @Html.DisplayFor(model => person.LastName) - @Html.DisplayFor(model => person.Email)</p>
+    }
+}
+
+@if (User.IsInRole("sportsman"))
+{
+    <form asp-action="SignUpForEvent">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Sign up for the event" class="btn btn-success" />
+    </form>
+}

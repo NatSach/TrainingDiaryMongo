@@ -1,0 +1,178 @@
+﻿@model EventViewModel
+@{
+    ViewData["Title"] = "Events";
+}
+<h2>@ViewData["Title"]</h2>
+<hr />
+
+<form asp-action="Index" method="get" id="testForm">
+    <div class="pos-f-t">
+        <div class="collapse bg-light p-4" id="navbarToggleExternalContent">
+            <div>
+                <h6>From</h6>
+                <div class='col-md-5'>
+                    <div class="form-group">
+                        <div class="input-group date" id="datetimepicker7" data-target-input="nearest">
+                            <input type="text" id="startDate" name="startDate" class="form-control datetimepicker-input" data-target="#datetimepicker7" />
+                            <div class="input-group-append" data-target="#datetimepicker7" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h6>To</h6>
+                <div class='col-md-5'>
+                    <div class="form-group">
+                        <div class="input-group date" id="datetimepicker8" data-target-input="nearest">
+                            <input type="text" id="endDate" name="endDate" class="form-control datetimepicker-input" data-target="#datetimepicker8" />
+                            <div class="input-group-append" data-target="#datetimepicker8" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-light">
+                <h6>Event type</h6>
+                @foreach (var type in Model.EventTypes)
+                {
+                    <label class="checkbox-inline">
+                        <input class="checkbox" type="checkbox" id="@type.Name" checked="@type.IsSelected"> @type.Name
+                    </label>
+                    <br />
+                }
+            </div>
+        </div>
+        <nav class="navbar navbar-light bg-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="form-inline my-2 my-lg-0">
+                <input name="name" class="form-control mr-sm-2" type="search" placeholder="Event name" aria-label="Search" value="@Model.SearchName">
+                <input id="types" name="types" type="hidden" />
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </div>
+        </nav>
+    </div>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.SportEvents[0].EventName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SportEvents[0].Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SportEvents[0].StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SportEvents[0].EndDate)
+            </th>
+            <th style="min-width: 150px">
+                @if (User.IsInRole("trainer"))
+                {
+                    <a class="btn btn-success" asp-controller="Event" asp-action="Create">Create new event</a>
+                }
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.SportEvents)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EventName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+                <td>
+
+                    <a asp-controller="Event" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (User.IsInRole("trainer"))
+                    {
+                        <span>|</span>
+                        <a asp-controller="Event" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <span>|</span>
+                        <a asp-controller="Event" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    function DatePickerInit() {
+        var True = true, False = false;
+
+        if (@Model.StartDate.HasValue === true) {
+            $('#datetimepicker7').datetimepicker({
+                date: new Date("@Model.StartDate.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ss")")
+            });
+        }
+
+        if (@Model.EndDate.HasValue === true) {
+            $('#datetimepicker8').datetimepicker({
+                useCurrent: false,
+                date: new Date("@Model.EndDate.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ss")")
+            });
+        }
+        else {
+             $('#datetimepicker8').datetimepicker({
+                useCurrent: false
+            });
+        }
+
+        $("#datetimepicker7").on("change.datetimepicker", function (e) {
+            $('#datetimepicker8').datetimepicker('minDate', e.date);
+        });
+        $("#datetimepicker8").on("change.datetimepicker", function (e) {
+            $('#datetimepicker7').datetimepicker('maxDate', e.date);
+        });
+    };
+
+    function FilterFormInit() {
+        var form = document.getElementById('testForm');
+
+        try {
+            form.addEventListener("submit", submitFn, false);
+        } catch (e) {
+            form.attachEvent("onsubmit", submitFn); //IE8
+        }
+
+        function submitFn(event) {
+            event.preventDefault();
+            var boxes = document.getElementsByClassName('checkbox');
+            var checked = [];
+            for (var i = 0; boxes[i]; ++i) {
+                if (boxes[i].checked) {
+                    checked.push(boxes[i].id);
+                }
+            }
+
+            var checkedStr = checked.join();
+            document.getElementById('types').value = checkedStr;
+            form.submit();
+
+            return false;
+        }
+
+    }
+
+    $(document).ready(function () {
+        DatePickerInit();
+        FilterFormInit();
+    });
+</script>
+
